@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from '../store/authStore'
@@ -11,6 +12,8 @@ import { DndContext, closestCenter } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import LineItemRow from '../components/LineItemRow'
 import { calcSubtotal, calcTax, calcGrandTotal, formatCurrency } from '../lib/calc'
+import QuotationPDF from '../components/QuotationPDF'
+import { exportToPDF } from '../lib/pdf'
 
 const EMPTY_FORM = {
   client_name: '', client_tax_id: '',
@@ -29,6 +32,7 @@ export default function QuotationForm() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const [error, setError] = useState('')
 
   const isReadOnly = ['deal', 'expired'].includes(form.status)
@@ -81,6 +85,13 @@ export default function QuotationForm() {
     }
   }
 
+  const handleExport = async () => {
+    setExporting(true)
+    await new Promise(r => setTimeout(r, 150))
+    await exportToPDF('pdf-container', `${form.number}-${form.client_name}.pdf`)
+    setExporting(false)
+  }
+
   const handleStatusChange = async (status) => {
     const { error: e } = await supabase.from('quotations').update({ status }).eq('id', id)
     if (!e) set('status', status)
@@ -106,6 +117,11 @@ export default function QuotationForm() {
               <Button variant="outline" onClick={() => handleStatusChange('deal')}>標記已成交</Button>
               <Button variant="outline" onClick={() => handleStatusChange('expired')}>標記已過期</Button>
             </>
+          )}
+          {!isNew && (
+            <Button variant="outline" onClick={handleExport} disabled={exporting}>
+              {exporting ? '產生中...' : '匯出 PDF'}
+            </Button>
           )}
           {!isReadOnly && (
             <Button onClick={handleSave} disabled={saving}>{saving ? '儲存中...' : '儲存'}</Button>
@@ -252,6 +268,13 @@ export default function QuotationForm() {
           className="mt-1 w-full border rounded p-2 text-sm resize-none h-20 focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder="例：以上報價未稅，報價有效期限30天" />
       </div>
+
+      {exporting && createPortal(
+        <div id="pdf-container" style={{ position: 'fixed', top: '-9999px', left: '-9999px', zIndex: -1 }}>
+          <QuotationPDF quotation={form} items={items} />
+        </div>,
+        document.body
+      )}
     </div>
   )
 }
