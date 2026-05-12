@@ -16,8 +16,11 @@ function ProtectedRoute({ children, adminOnly = false }) {
 }
 
 export default function App() {
-  const { init } = useAuthStore()
-  useEffect(() => { init() }, [init])
+  useEffect(() => {
+    let subscription
+    useAuthStore.getState().init().then(sub => { subscription = sub })
+    return () => subscription?.unsubscribe()
+  }, [])
 
   return (
     <BrowserRouter>

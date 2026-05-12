@@ -15,15 +15,17 @@ export const useAuthStore = create((set) => ({
     } else {
       set({ session: null, profile: null, loading: false })
     }
-    supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
+        set({ loading: true })
         const { data: profile } = await supabase
           .from('profiles').select('*').eq('id', session.user.id).single()
-        set({ session, profile })
+        set({ session, profile, loading: false })
       } else {
-        set({ session: null, profile: null })
+        set({ session: null, profile: null, loading: false })
       }
     })
+    return subscription
   },
 
   signOut: async () => {
