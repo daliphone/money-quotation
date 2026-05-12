@@ -16,7 +16,8 @@ export default function QuotationList() {
 
   const filtered = quotations.filter(q => {
     const okStatus = activeFilter === '全部' || q.status === activeFilter
-    const okSearch = !search || q.client_name.includes(search) || q.number.includes(search)
+    const s = search.toLowerCase()
+    const okSearch = !s || q.client_name.toLowerCase().includes(s) || q.number.toLowerCase().includes(s)
     return okStatus && okSearch
   })
 
@@ -72,7 +73,7 @@ export default function QuotationList() {
                   <Button size="sm" variant="outline" onClick={() => navigate(`/quotations/${q.id}`)}>開啟</Button>
                   <Button size="sm" variant="ghost" onClick={() => handleDuplicate(q.id)}>複製</Button>
                   <Button size="sm" variant="ghost" className="text-red-500"
-                    onClick={() => { if (confirm(`確認刪除 ${q.number}？`)) remove(q.id) }}>刪除</Button>
+                    onClick={async () => { if (confirm(`確認刪除 ${q.number}？`)) await remove(q.id) }}>刪除</Button>
                 </td>
               </tr>
             ))}

@@ -30,7 +30,7 @@ export function useQuotations() {
       .select('*, quotation_items(*)')
       .eq('id', id)
       .single()
-    if (!src) return null
+    if (!src || !profile) return null
     const { id: _id, number: _num, created_at: _ca, updated_at: _ua, quotation_items, ...rest } = src
     const { data: newQ, error } = await supabase
       .from('quotations')
