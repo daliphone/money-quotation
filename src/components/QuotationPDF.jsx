@@ -22,7 +22,7 @@ export default function QuotationPDF({ quotation, items }) {
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#444' }}>
           <div>
-            <div style={{ fontWeight: 'bold' }}>馬尼企業有限公司</div>
+            <div style={{ fontWeight: 'bold' }}>Money 企業有限公司</div>
             <div>地址：台南市東區東門路三段七號</div>
             <div>電話：06-2902237</div>
           </div>
@@ -99,7 +99,7 @@ export default function QuotationPDF({ quotation, items }) {
       {/* 簽章欄 */}
       <div style={{ display: 'flex', gap: '24px', marginTop: '28px', fontSize: '12px' }}>
         {[
-          { title: '報價單位', lines: ['馬尼企業有限公司', '地址：台南市東區東門路三段七號', '電話：06-2902237'] },
+          { title: '報價單位', lines: ['Money 企業有限公司', '地址：台南市東區東門路三段七號', '電話：06-2902237'] },
           { title: '採購單位', lines: ['單位：', '地址：', '電話：'] },
         ].map(box => (
           <div key={box.title} style={{ flex: 1, border: '1px solid #ccc', padding: '12px', borderRadius: '4px' }}>
