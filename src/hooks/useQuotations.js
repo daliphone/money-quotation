@@ -1,23 +1,21 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { useAuthStore } from '../store/authStore'
 
 export function useQuotations() {
   const [quotations, setQuotations] = useState([])
   const [loading, setLoading] = useState(true)
-  const { profile } = useAuthStore()
 
   const fetch = async () => {
     setLoading(true)
     const { data } = await supabase
       .from('quotations')
-      .select('*, profiles(name)')
+      .select('*')
       .order('created_at', { ascending: false })
     setQuotations(data ?? [])
     setLoading(false)
   }
 
-  useEffect(() => { if (profile) fetch() }, [profile])
+  useEffect(() => { fetch() }, [])
 
   const remove = async (id) => {
     await supabase.from('quotations').delete().eq('id', id)
@@ -30,11 +28,11 @@ export function useQuotations() {
       .select('*, quotation_items(*)')
       .eq('id', id)
       .single()
-    if (!src || !profile) return null
+    if (!src) return null
     const { id: _id, number: _num, created_at: _ca, updated_at: _ua, quotation_items, ...rest } = src
     const { data: newQ, error } = await supabase
       .from('quotations')
-      .insert({ ...rest, status: 'draft', created_by: profile.id })
+      .insert({ ...rest, status: 'draft', created_by: null })
       .select().single()
     if (error) throw error
     if (quotation_items?.length) {

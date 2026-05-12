@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { useAuthStore } from '../store/authStore'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
@@ -25,7 +24,6 @@ const EMPTY_FORM = {
 export default function QuotationForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { profile } = useAuthStore()
   const isNew = !id
 
   const [form, setForm] = useState(EMPTY_FORM)
@@ -64,7 +62,7 @@ export default function QuotationForm() {
       let qId = id
       if (isNew) {
         const { data, error: e } = await supabase.from('quotations')
-          .insert({ ...form, created_by: profile.id }).select().single()
+          .insert({ ...form, created_by: null }).select().single()
         if (e) throw e
         qId = data.id
       } else {
