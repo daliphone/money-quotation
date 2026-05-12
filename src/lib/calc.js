@@ -15,5 +15,5 @@ export function calcGrandTotal(subtotal, tax) {
 }
 
 export function formatCurrency(amount) {
-  return Math.round(amount).toLocaleString('zh-TW')
+  return new Intl.NumberFormat('zh-TW').format(Math.round(amount))
 }
