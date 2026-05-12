@@ -7,6 +7,10 @@ import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
 import StatusBadge from '../components/StatusBadge'
+import { DndContext, closestCenter } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
+import LineItemRow from '../components/LineItemRow'
+import { calcSubtotal, calcTax, calcGrandTotal, formatCurrency } from '../lib/calc'
 
 const EMPTY_FORM = {
   client_name: '', client_tax_id: '',
@@ -29,6 +33,11 @@ export default function QuotationForm() {
 
   const isReadOnly = ['deal', 'expired'].includes(form.status)
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }))
+
+  const newItem = () => ({
+    _key: crypto.randomUUID(),
+    product_name: '', spec: '', qty: 1, unit: '台', cash_price: 0, card_price: 0,
+  })
 
   useEffect(() => {
     if (!id) return
@@ -154,9 +163,85 @@ export default function QuotationForm() {
         </div>
       </div>
 
-      {/* 明細列佔位 — Task 8 將替換 */}
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-4 text-sm text-gray-400">
-        明細列（Task 8 實作）
+      {/* 明細列 */}
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-4 overflow-x-auto">
+        <DndContext collisionDetection={closestCenter}
+          onDragEnd={({ active, over }) => {
+            if (!over || active.id === over.id) return
+            setItems(prev => {
+              const from = prev.findIndex(i => i._key === active.id)
+              const to = prev.findIndex(i => i._key === over.id)
+              return arrayMove(prev, from, to)
+            })
+          }}>
+          <table className="w-full text-sm min-w-[600px]">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-2 py-2 text-left w-8 text-gray-500">#</th>
+                <th className="w-6"></th>
+                <th className="px-2 py-2 text-left">品名</th>
+                <th className="px-2 py-2 text-left">規格</th>
+                <th className="px-2 py-2 text-center">數量</th>
+                <th className="px-2 py-2 text-center">單位</th>
+                {form.show_cash && <><th className="px-2 py-2 text-right">現金單價</th><th className="px-2 py-2 text-right">現金總價</th></>}
+                {form.show_card && <><th className="px-2 py-2 text-right">刷卡單價</th><th className="px-2 py-2 text-right">刷卡總價</th></>}
+                {!isReadOnly && <th className="w-8"></th>}
+              </tr>
+            </thead>
+            <SortableContext items={items.map(i => i._key)} strategy={verticalListSortingStrategy}>
+              <tbody>
+                {items.map((item, idx) => (
+                  <LineItemRow key={item._key} item={item} index={idx}
+                    showCash={form.show_cash} showCard={form.show_card} disabled={isReadOnly}
+                    onChange={updated => setItems(prev => prev.map(i => i._key === item._key ? updated : i))}
+                    onRemove={() => setItems(prev => prev.filter(i => i._key !== item._key))} />
+                ))}
+              </tbody>
+            </SortableContext>
+          </table>
+        </DndContext>
+
+        {!isReadOnly && (
+          <button onClick={() => setItems(prev => [...prev, newItem()])}
+            className="mt-3 text-sm text-blue-600 hover:text-blue-800">+ 新增項目</button>
+        )}
+
+        {/* 合計 */}
+        <div className="mt-4 flex justify-end">
+          <table className="text-sm w-64">
+            <tbody>
+              {form.show_cash && (
+                <tr>
+                  <td className="py-1 text-gray-500">現金小計</td>
+                  <td className="py-1 text-right font-medium">{formatCurrency(calcSubtotal(items, 'cash_price'))}</td>
+                </tr>
+              )}
+              {form.show_card && (
+                <tr>
+                  <td className="py-1 text-gray-500">刷卡小計</td>
+                  <td className="py-1 text-right font-medium">{formatCurrency(calcSubtotal(items, 'card_price'))}</td>
+                </tr>
+              )}
+              {form.tax_rate > 0 && (
+                <tr>
+                  <td className="py-1 text-gray-500">稅額 ({form.tax_rate}%)</td>
+                  <td className="py-1 text-right">
+                    {formatCurrency(calcTax(calcSubtotal(items, form.show_cash ? 'cash_price' : 'card_price'), form.tax_rate))}
+                  </td>
+                </tr>
+              )}
+              <tr className="border-t font-bold">
+                <td className="pt-2">總計</td>
+                <td className="pt-2 text-right">
+                  {formatCurrency(calcGrandTotal(
+                    calcSubtotal(items, form.show_cash ? 'cash_price' : 'card_price'),
+                    calcTax(calcSubtotal(items, form.show_cash ? 'cash_price' : 'card_price'), form.tax_rate)
+                  ))}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* 附記 */}
