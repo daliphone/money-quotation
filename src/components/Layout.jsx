@@ -6,12 +6,13 @@ export default function Layout({ children }) {
   const nav = [
     { to: '/quotations', label: '報價單' },
     { to: '/products', label: '品名庫' },
+    { to: '/settings', label: '公司設定' },
   ]
 
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white border-b px-6 py-3 flex items-center gap-6">
-        <span className="font-bold">Money 通訊</span>
+        <span className="font-bold text-blue-900">Money 通訊</span>
         {nav.map(item => (
           <Link key={item.to} to={item.to}
             className={`text-sm ${pathname.startsWith(item.to) ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-gray-900'}`}>

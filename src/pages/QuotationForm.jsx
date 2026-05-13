@@ -13,18 +13,23 @@ import LineItemRow from '../components/LineItemRow'
 import { calcSubtotal, calcTax, calcGrandTotal, formatCurrency } from '../lib/calc'
 import QuotationPDF from '../components/QuotationPDF'
 import { exportToPDF } from '../lib/pdf'
+import { useSettings } from '../hooks/useSettings'
 
 const EMPTY_FORM = {
   client_name: '', client_tax_id: '',
+  client_contact: '', client_phone: '', client_mobile: '',
+  client_fax: '', client_email: '', client_address: '',
   date: new Date().toISOString().slice(0, 10),
   valid_days: 30, show_cash: true, show_card: true,
   tax_rate: 0, notes: '', status: 'draft',
+  buyer_name: '', buyer_address: '', buyer_phone: '',
 }
 
 export default function QuotationForm() {
   const { id } = useParams()
   const navigate = useNavigate()
   const isNew = !id
+  const { settings } = useSettings()
 
   const [form, setForm] = useState(EMPTY_FORM)
   const [items, setItems] = useState([])
@@ -85,9 +90,14 @@ export default function QuotationForm() {
 
   const handleExport = async () => {
     setExporting(true)
-    await new Promise(r => setTimeout(r, 150))
-    await exportToPDF('pdf-container', `${form.number}-${form.client_name}.pdf`)
-    setExporting(false)
+    try {
+      await new Promise(r => setTimeout(r, 500))
+      await exportToPDF('pdf-container', `${form.number}-${form.client_name}.pdf`)
+    } catch (e) {
+      setError('PDF 產生失敗：' + e.message)
+    } finally {
+      setExporting(false)
+    }
   }
 
   const handleStatusChange = async (status) => {
@@ -258,6 +268,41 @@ export default function QuotationForm() {
         </div>
       </div>
 
+      {/* 客戶詳細資訊 */}
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-4">
+        <p className="text-sm font-medium text-gray-700 mb-3">客戶詳細資訊</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div><Label>聯絡人</Label>
+            <Input value={form.client_contact ?? ''} disabled={isReadOnly} onChange={e => set('client_contact', e.target.value)} /></div>
+          <div><Label>電話</Label>
+            <Input value={form.client_phone ?? ''} disabled={isReadOnly} onChange={e => set('client_phone', e.target.value)} /></div>
+          <div><Label>手機</Label>
+            <Input value={form.client_mobile ?? ''} disabled={isReadOnly} onChange={e => set('client_mobile', e.target.value)} /></div>
+          <div><Label>傳真</Label>
+            <Input value={form.client_fax ?? ''} disabled={isReadOnly} onChange={e => set('client_fax', e.target.value)} /></div>
+          <div><Label>Email</Label>
+            <Input type="email" value={form.client_email ?? ''} disabled={isReadOnly} onChange={e => set('client_email', e.target.value)} /></div>
+          <div><Label>地址</Label>
+            <Input value={form.client_address ?? ''} disabled={isReadOnly} onChange={e => set('client_address', e.target.value)} /></div>
+        </div>
+      </div>
+
+      {/* 採購方資訊 */}
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-4">
+        <p className="text-sm font-medium text-gray-700 mb-3">採購方資訊（顯示於 PDF 簽章欄）</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="col-span-2"><Label>採購單位名稱</Label>
+            <Input value={form.buyer_name ?? ''} disabled={isReadOnly}
+              onChange={e => set('buyer_name', e.target.value)} /></div>
+          <div><Label>地址</Label>
+            <Input value={form.buyer_address ?? ''} disabled={isReadOnly}
+              onChange={e => set('buyer_address', e.target.value)} /></div>
+          <div><Label>電話</Label>
+            <Input value={form.buyer_phone ?? ''} disabled={isReadOnly}
+              onChange={e => set('buyer_phone', e.target.value)} /></div>
+        </div>
+      </div>
+
       {/* 附記 */}
       <div className="bg-white rounded-lg shadow-sm p-6">
         <Label>附記</Label>
@@ -268,8 +313,10 @@ export default function QuotationForm() {
       </div>
 
       {exporting && createPortal(
-        <div id="pdf-container" style={{ position: 'fixed', top: '-9999px', left: '-9999px', zIndex: -1 }}>
-          <QuotationPDF quotation={form} items={items} />
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '794px', overflow: 'hidden', opacity: 0.01, pointerEvents: 'none', zIndex: -1 }}>
+          <div id="pdf-container">
+            <QuotationPDF quotation={form} items={items} settings={settings} />
+          </div>
         </div>,
         document.body
       )}
