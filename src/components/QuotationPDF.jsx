@@ -5,21 +5,21 @@ const td = { padding: '5px 8px', border: '1px solid #e2e8f0', fontSize: '11px' }
 
 function Stamp({ company = '馬尼行動通訊' }) {
   return (
-    <svg width="108" height="108" viewBox="0 0 108 108" xmlns="http://www.w3.org/2000/svg">
+    <svg width="136" height="100" viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <path id="nameArc" d="M 9,54 A 45,45 0 1,1 99,54" />
-        <path id="starArc" d="M 18,72 A 38,38 0 0,0 90,72" />
+        <path id="nameArc" d="M 6,60 A 74,54 0 0,0 154,60" />
+        <path id="starArc" d="M 18,60 A 62,45 0 0,1 142,60" />
       </defs>
-      <circle cx="54" cy="54" r="51" fill="rgba(185,0,0,0.04)" stroke="#b91c1c" strokeWidth="2.5" />
-      <circle cx="54" cy="54" r="43" fill="none" stroke="#b91c1c" strokeWidth="1" />
+      <ellipse cx="80" cy="60" rx="77" ry="57" fill="rgba(185,0,0,0.04)" stroke="#b91c1c" strokeWidth="2.5" />
+      <ellipse cx="80" cy="60" rx="68" ry="48" fill="none" stroke="#b91c1c" strokeWidth="1" />
       <text fontSize="11" fontFamily="Microsoft JhengHei, PingFang TC, Arial, sans-serif" fontWeight="bold" fill="#b91c1c" letterSpacing="2">
-        <textPath href="#nameArc" startOffset="12%">{company}</textPath>
+        <textPath href="#nameArc" startOffset="25%">{company}</textPath>
       </text>
-      <line x1="17" y1="57" x2="91" y2="57" stroke="#b91c1c" strokeWidth="0.8" />
-      <text x="54" y="51" textAnchor="middle" fontSize="13" fontFamily="Microsoft JhengHei, PingFang TC, Arial, sans-serif" fontWeight="bold" fill="#b91c1c" letterSpacing="4">報 價</text>
-      <text x="54" y="67" textAnchor="middle" fontSize="12" fontFamily="Microsoft JhengHei, PingFang TC, Arial, sans-serif" fontWeight="bold" fill="#b91c1c" letterSpacing="2">專 用 章</text>
+      <line x1="16" y1="60" x2="144" y2="60" stroke="#b91c1c" strokeWidth="0.8" />
+      <text x="80" y="52" textAnchor="middle" fontSize="13" fontFamily="Microsoft JhengHei, PingFang TC, Arial, sans-serif" fontWeight="bold" fill="#b91c1c" letterSpacing="4">報 價</text>
+      <text x="80" y="73" textAnchor="middle" fontSize="12" fontFamily="Microsoft JhengHei, PingFang TC, Arial, sans-serif" fontWeight="bold" fill="#b91c1c" letterSpacing="2">專 用 章</text>
       <text fontSize="8" fontFamily="serif" fill="#b91c1c">
-        <textPath href="#starArc" startOffset="18%">★  ★  ★  ★  ★</textPath>
+        <textPath href="#starArc" startOffset="14%">★  ★  ★  ★  ★</textPath>
       </text>
     </svg>
   )
